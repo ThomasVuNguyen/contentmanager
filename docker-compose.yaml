@@ -16,6 +16,11 @@ services:
       IS_GENERAL: 'true'
       DISABLE_REGISTRATION: 'false'
 
+      # === Email Settings (Resend)
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-postiz@beenex.org}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-ComfySpace Social}
+
       # === Storage Settings
       STORAGE_PROVIDER: 'local'
       UPLOAD_DIRECTORY: '/uploads'
@@ -124,6 +129,7 @@ services:
       - postiz-uploads:/uploads/
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
       - "traefik.http.routers.postiz.rule=Host(`social.beenex.org`)"
       - "traefik.http.routers.postiz.entrypoints=http,https"
       - "traefik.http.services.postiz.loadbalancer.server.port=5000"
