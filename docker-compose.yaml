@@ -124,9 +124,18 @@ services:
       - postiz-uploads:/uploads/
     ports:
       - '4007:5000'
-    networks:
-      - postiz-network
-      - temporal-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.postiz.rule=Host(`social.beenex.org`)"
+      - "traefik.http.routers.postiz.entrypoints=https"
+      - "traefik.http.routers.postiz.tls=true"
+      - "traefik.http.routers.postiz.tls.certresolver=letsencrypt"
+      - "traefik.http.services.postiz.loadbalancer.server.port=5000"
+      - "traefik.http.routers.postiz-http.rule=Host(`social.beenex.org`)"
+      - "traefik.http.routers.postiz-http.entrypoints=http"
+      - "traefik.http.routers.postiz-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "coolify.managed=true"
     depends_on:
       postiz-postgres:
         condition: service_healthy
@@ -143,8 +152,6 @@ services:
       POSTGRES_DB: postiz-db-local
     volumes:
       - postgres-volume:/var/lib/postgresql/data
-    networks:
-      - postiz-network
     healthcheck:
       test: pg_isready -U postiz-user -d postiz-db-local
       interval: 10s
@@ -161,8 +168,6 @@ services:
       retries: 3
     volumes:
       - postiz-redis-data:/data
-    networks:
-      - postiz-network
 
   # For Application Monitoring / Debugging
   spotlight:
@@ -171,8 +176,6 @@ services:
     ports:
       - 8969:8969/tcp
     image: ghcr.io/getsentry/spotlight:latest
-    networks:
-      - postiz-network
 
   # -----------------------
   # Temporal Stack
@@ -188,8 +191,6 @@ services:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms256m -Xmx256m
       - xpack.security.enabled=false
-    networks:
-      - temporal-network
     expose:
       - 9200
     volumes:
@@ -201,8 +202,6 @@ services:
     environment:
       POSTGRES_PASSWORD: temporal
       POSTGRES_USER: temporal
-    networks:
-      - temporal-network
     expose:
       - 5432
     volumes:
@@ -227,8 +226,6 @@ services:
       - ES_SEEDS=temporal-elasticsearch
       - ES_VERSION=v7
       - TEMPORAL_NAMESPACE=default
-    networks:
-      - temporal-network
     volumes:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
     labels:
@@ -240,8 +237,6 @@ services:
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CLI_ADDRESS=temporal:7233
-    networks:
-      - temporal-network
     stdin_open: true
     depends_on:
       - temporal
@@ -253,8 +248,6 @@ services:
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://127.0.0.1:3000
-    networks:
-      - temporal-network
     ports:
       - '8080:8080'
 
@@ -272,8 +265,7 @@ volumes:
     external: false
 
 networks:
-  postiz-network:
-    external: false
-  temporal-network:
-    driver: bridge
-    name: temporal-network
+  default:
+    name: coolify
+    external: true
+
