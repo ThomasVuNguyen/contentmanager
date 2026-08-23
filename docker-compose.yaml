@@ -17,6 +17,7 @@ services:
       DISABLE_REGISTRATION: 'false'
 
       # === Email Settings (Resend)
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-resend}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-postiz@beenex.org}
       EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-ComfySpace Social}
@@ -129,13 +130,17 @@ services:
       - "traefik.http.routers.postiz.entrypoints=http,https"
       - "traefik.http.services.postiz.loadbalancer.server.port=5000"
       - "coolify.managed=true"
+    networks:
+      default:
+        aliases:
+          - postiz
     depends_on:
       postiz-postgres:
         condition: service_healthy
       postiz-redis:
         condition: service_healthy
       temporal:
-        condition: service_started
+        condition: service_healthy
 
   postiz-postgres:
     image: postgres:17-alpine
@@ -147,6 +152,10 @@ services:
       POSTGRES_DB: postiz-db-local
     volumes:
       - postgres-volume:/var/lib/postgresql/data
+    networks:
+      default:
+        aliases:
+          - postiz-postgres
     healthcheck:
       test: pg_isready -U postiz-user -d postiz-db-local
       interval: 5s
@@ -157,6 +166,10 @@ services:
     image: redis:7.2-alpine
     container_name: postiz-redis
     restart: always
+    networks:
+      default:
+        aliases:
+          - postiz-redis
     healthcheck:
       test: redis-cli ping
       interval: 5s
@@ -178,6 +191,10 @@ services:
       POSTGRES_DB: temporal
     volumes:
       - temporal-postgres-volume:/var/lib/postgresql/data
+    networks:
+      default:
+        aliases:
+          - temporal-postgresql
     healthcheck:
       test: pg_isready -U temporal -d temporal
       interval: 5s
@@ -191,6 +208,10 @@ services:
     depends_on:
       temporal-postgresql:
         condition: service_healthy
+    networks:
+      default:
+        aliases:
+          - temporal
     environment:
       - DB=postgres12
       - DB_PORT=5432
@@ -202,6 +223,12 @@ services:
       - TEMPORAL_NAMESPACE=default
     volumes:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 7233 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
 
 volumes:
   postgres-volume:
