@@ -224,7 +224,7 @@ services:
     volumes:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
     healthcheck:
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 7233 || exit 1"]
+      test: ["CMD-SHELL", "tctl --address 127.0.0.1:7233 cluster health || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 20
