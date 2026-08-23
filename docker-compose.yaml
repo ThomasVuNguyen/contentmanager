@@ -140,7 +140,7 @@ services:
       postiz-redis:
         condition: service_healthy
       temporal:
-        condition: service_healthy
+        condition: service_started
 
   postiz-postgres:
     image: postgres:17-alpine
@@ -223,12 +223,6 @@ services:
       - TEMPORAL_NAMESPACE=default
     volumes:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
-    healthcheck:
-      test: ["CMD-SHELL", "tctl --address 127.0.0.1:7233 cluster health || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 15s
 
 volumes:
   postgres-volume:
