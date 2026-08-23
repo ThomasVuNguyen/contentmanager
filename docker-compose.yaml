@@ -24,8 +24,8 @@ services:
       EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-postiz@beenex.org}
       EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-ComfySpace Social}
 
-      # === Storage Settings (Cloudflare R2)
-      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-cloudflare}
+      # === Storage Settings (Cloudflare R2 or local)
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
       CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
       CLOUDFLARE_ACCESS_KEY: ${CLOUDFLARE_ACCESS_KEY:-}
       CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY:-}
