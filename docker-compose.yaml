@@ -125,14 +125,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.postiz.rule=Host(`social.beenex.org`)"
-      - "traefik.http.routers.postiz.entrypoints=https"
-      - "traefik.http.routers.postiz.tls=true"
-      - "traefik.http.routers.postiz.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.postiz.entrypoints=http,https"
       - "traefik.http.services.postiz.loadbalancer.server.port=5000"
-      - "traefik.http.routers.postiz-http.rule=Host(`social.beenex.org`)"
-      - "traefik.http.routers.postiz-http.entrypoints=http"
-      - "traefik.http.routers.postiz-http.middlewares=redirect-to-https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "coolify.managed=true"
     depends_on:
       postiz-postgres:
