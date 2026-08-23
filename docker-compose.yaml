@@ -122,8 +122,6 @@ services:
     volumes:
       - postiz-config:/config/
       - postiz-uploads:/uploads/
-    ports:
-      - '4007:5000'
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.postiz.rule=Host(`social.beenex.org`)"
@@ -173,8 +171,6 @@ services:
   spotlight:
     pull_policy: always
     container_name: spotlight
-    ports:
-      - 8969:8969/tcp
     image: ghcr.io/getsentry/spotlight:latest
 
   # -----------------------
@@ -209,8 +205,6 @@ services:
 
   temporal:
     container_name: temporal
-    ports:
-      - '7233:7233'
     image: temporalio/auto-setup:1.28.1
     depends_on:
       - temporal-postgresql
@@ -248,8 +242,6 @@ services:
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://127.0.0.1:3000
-    ports:
-      - '8080:8080'
 
 volumes:
   postgres-volume:
