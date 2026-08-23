@@ -134,6 +134,8 @@ services:
         condition: service_healthy
       postiz-redis:
         condition: service_healthy
+      temporal:
+        condition: service_started
 
   postiz-postgres:
     image: postgres:17-alpine
@@ -147,63 +149,48 @@ services:
       - postgres-volume:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -U postiz-user -d postiz-db-local
-      interval: 10s
+      interval: 5s
       timeout: 3s
-      retries: 3
+      retries: 5
+
   postiz-redis:
-    image: redis:7.2
+    image: redis:7.2-alpine
     container_name: postiz-redis
     restart: always
     healthcheck:
       test: redis-cli ping
-      interval: 10s
+      interval: 5s
       timeout: 3s
-      retries: 3
+      retries: 5
     volumes:
       - postiz-redis-data:/data
 
-  # For Application Monitoring / Debugging
-  spotlight:
-    pull_policy: always
-    container_name: spotlight
-    image: ghcr.io/getsentry/spotlight:latest
-
   # -----------------------
-  # Temporal Stack
+  # Temporal Stack (Lightweight, PostgreSQL-backed)
   # -----------------------
-  temporal-elasticsearch:
-    container_name: temporal-elasticsearch
-    image: elasticsearch:7.17.27
-    environment:
-      - cluster.routing.allocation.disk.threshold_enabled=true
-      - cluster.routing.allocation.disk.watermark.low=512mb
-      - cluster.routing.allocation.disk.watermark.high=256mb
-      - cluster.routing.allocation.disk.watermark.flood_stage=128mb
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms256m -Xmx256m
-      - xpack.security.enabled=false
-    expose:
-      - 9200
-    volumes:
-      - /var/lib/elasticsearch/data
-
   temporal-postgresql:
     container_name: temporal-postgresql
-    image: postgres:16
+    image: postgres:16-alpine
+    restart: always
     environment:
       POSTGRES_PASSWORD: temporal
       POSTGRES_USER: temporal
-    expose:
-      - 5432
+      POSTGRES_DB: temporal
     volumes:
-      - /var/lib/postgresql/data
+      - temporal-postgres-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U temporal -d temporal
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   temporal:
     container_name: temporal
     image: temporalio/auto-setup:1.28.1
+    restart: always
     depends_on:
-      - temporal-postgresql
-      - temporal-elasticsearch
+      temporal-postgresql:
+        condition: service_healthy
     environment:
       - DB=postgres12
       - DB_PORT=5432
@@ -211,38 +198,19 @@ services:
       - POSTGRES_PWD=temporal
       - POSTGRES_SEEDS=temporal-postgresql
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
-      - ENABLE_ES=true
-      - ES_SEEDS=temporal-elasticsearch
-      - ES_VERSION=v7
+      - ENABLE_ES=false
       - TEMPORAL_NAMESPACE=default
     volumes:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
-    labels:
-      kompose.volume.type: configMap
-
-  temporal-admin-tools:
-    container_name: temporal-admin-tools
-    image: temporalio/admin-tools:1.28.1-tctl-1.18.4-cli-1.4.1
-    environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CLI_ADDRESS=temporal:7233
-    stdin_open: true
-    depends_on:
-      - temporal
-    tty: true
-
-  temporal-ui:
-    container_name: temporal-ui
-    image: temporalio/ui:2.34.0
-    environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://127.0.0.1:3000
 
 volumes:
   postgres-volume:
     external: false
 
   postiz-redis-data:
+    external: false
+
+  temporal-postgres-volume:
     external: false
 
   postiz-config:
@@ -255,4 +223,5 @@ networks:
   default:
     name: coolify
     external: true
+
 
