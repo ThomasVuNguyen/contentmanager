@@ -123,11 +123,23 @@ services:
     volumes:
       - postiz-config:/config/
       - postiz-uploads:/uploads/
+    healthcheck:
+      test: node -e "require('http').get('http://localhost:5000', (r) => { process.exit(r.statusCode < 400 ? 0 : 1); }).on('error', () => process.exit(1));"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=coolify"
+      - "traefik.http.routers.postiz-http.rule=Host(`social.beenex.org`)"
+      - "traefik.http.routers.postiz-http.entrypoints=http"
+      - "traefik.http.routers.postiz-http.middlewares=redirect-to-https@docker"
       - "traefik.http.routers.postiz.rule=Host(`social.beenex.org`)"
-      - "traefik.http.routers.postiz.entrypoints=http,https"
+      - "traefik.http.routers.postiz.entrypoints=https"
+      - "traefik.http.routers.postiz.tls=true"
+      - "traefik.http.routers.postiz.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.postiz.priority=100"
       - "traefik.http.services.postiz.loadbalancer.server.port=5000"
       - "coolify.managed=true"
     networks:
@@ -218,11 +230,8 @@ services:
       - POSTGRES_USER=temporal
       - POSTGRES_PWD=temporal
       - POSTGRES_SEEDS=temporal-postgresql
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
       - ENABLE_ES=false
       - TEMPORAL_NAMESPACE=default
-    volumes:
-      - ./dynamicconfig:/etc/temporal/config/dynamicconfig
 
 volumes:
   postgres-volume:
