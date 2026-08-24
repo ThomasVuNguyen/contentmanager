@@ -10,6 +10,7 @@ import { GroupListTool } from '@gitroom/nestjs-libraries/chat/tools/group.list.t
 import { UploadFromUrlTool } from '@gitroom/nestjs-libraries/chat/tools/upload.from.url.tool';
 import { PostsListTool } from '@gitroom/nestjs-libraries/chat/tools/posts.list.tool';
 import { PostSettingsTool } from '@gitroom/nestjs-libraries/chat/tools/post.settings.tool';
+import { UpdatePostTool } from '@gitroom/nestjs-libraries/chat/tools/update.post.tool';
 
 export const toolList = [
   IntegrationListTool,
@@ -17,6 +18,7 @@ export const toolList = [
   IntegrationValidationTool,
   IntegrationTriggerTool,
   IntegrationSchedulePostTool,
+  UpdatePostTool,
   PostsListTool,
   PostSettingsTool,
   GenerateVideoOptionsTool,
@@ -25,3 +27,4 @@ export const toolList = [
   GenerateImageTool,
   UploadFromUrlTool,
 ];
+
