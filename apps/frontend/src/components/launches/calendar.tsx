@@ -1161,13 +1161,19 @@ const CalendarItem: FC<{
         )}
       >
         <div className={clsx('relative min-w-[20px]')}>
-          <img
+          <SafeImage
             className="w-[20px] h-[20px] rounded-[8px]"
             src={post.integration.picture! || '/no-picture.jpg'}
+            alt=""
+            width={20}
+            height={20}
           />
-          <img
+          <SafeImage
             className="w-[12px] h-[12px] rounded-[8px] absolute z-10 top-[10px] end-0 border border-fifth"
             src={`/icons/platforms/${post.integration?.providerIdentifier}.png`}
+            alt=""
+            width={12}
+            height={12}
           />
         </div>
         <div className="w-full flex-1 flex flex-col min-h-[40px]">
