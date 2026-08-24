@@ -8,7 +8,7 @@ export class UploadFactory {
 
     switch (storageProvider) {
       case 'local':
-        return new LocalStorage(process.env.UPLOAD_DIRECTORY!);
+        return new LocalStorage(process.env.UPLOAD_DIRECTORY || '/uploads');
       case 'cloudflare':
         return new CloudflareStorage(
           process.env.CLOUDFLARE_ACCOUNT_ID!,

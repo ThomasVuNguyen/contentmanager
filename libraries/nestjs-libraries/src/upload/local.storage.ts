@@ -21,7 +21,12 @@ const LOCAL_STORAGE_ALLOWED_MIME = new Set<string>([
   'audio/ogg',
 ]);
 export class LocalStorage implements IUploadProvider {
-  constructor(private uploadDirectory: string) {}
+  private uploadDirectory: string;
+
+  constructor(uploadDirectory?: string) {
+    this.uploadDirectory =
+      uploadDirectory || process.env.UPLOAD_DIRECTORY || '/uploads';
+  }
 
   async uploadSimple(path: string) {
     const dataUrl = path.startsWith('data:') ? parseDataUrl(path) : null;

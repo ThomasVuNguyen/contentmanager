@@ -371,7 +371,7 @@ export class PostsService {
               type: 'image',
               path:
                 m.path.indexOf('http') === -1
-                  ? process.env.UPLOAD_DIRECTORY + m.path
+                  ? (process.env.UPLOAD_DIRECTORY || '/uploads') + m.path
                   : m.path,
             };
           })
@@ -419,7 +419,7 @@ export class PostsService {
                 type: 'image',
                 path:
                   path.indexOf('http') === -1
-                    ? process.env.UPLOAD_DIRECTORY + path
+                    ? (process.env.UPLOAD_DIRECTORY || '/uploads') + path
                     : path,
               };
             }
